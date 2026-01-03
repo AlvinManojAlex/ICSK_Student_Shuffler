@@ -17,7 +17,7 @@ def create_test_excel(total_students: int, num_naughty_students: int, num_weak_s
     # Assigning gender to the random student
     num_boys = int(total_students * boys_to_girls_ratio)
     num_girls = total_students - num_boys
-    genders = ["Boy"] * num_boys + ["Girl"] * num_girls
+    genders = ["Male"] * num_boys + ["Female"] * num_girls
     random.shuffle(genders)
 
     # Msc/Isl assignment
