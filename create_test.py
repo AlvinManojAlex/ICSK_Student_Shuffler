@@ -69,7 +69,7 @@ def check_valid_args(total_students: int, num_naughty_students: int, num_weak_st
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create a test excel file with specifications like total number of studehts, naughty students, weak students, gender ratio and msc_to_isl ratio"
+        description="Create a test excel file with specifications like total number of students, naughty students, weak students, gender ratio and msc_to_isl ratio"
     )
 
     parser.add_argument(
