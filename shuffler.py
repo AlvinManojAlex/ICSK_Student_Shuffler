@@ -3,75 +3,98 @@ import pandas as pd
 import os
 import random
 
-def initialize_classes(num_classes: int, class_sizes: list):
+def shuffle(students_df, num_classes: int, class_sizes: list):
     """
-        Initializing classes according to its class size along with shuffled students
+        Function to shuffle students uniformly
+        First, evenly distribute students who are naughty and weak in studies among the classes
+        Then distribute the remaining students uniformly
     """
-    
-    classes = []
-    
-    for i in range(num_classes):
-        classes.append({
+
+    # Total number of students in the dataframe
+    total_students = len(students_df)
+
+    # Finding the rows with naughty/weak in the 'Remarks' column
+    has_naughty, has_weak = find_naughty_weak(students_df)
+
+    # Naughty students and (Naughty + Weak in studies) considered as naughty student in shuffling
+    is_naughty = has_naughty
+    students_df["isNaughty"] = is_naughty
+
+    # Weak students considered as weak students in shuffling
+    is_weak = has_weak & ~has_naughty
+    students_df["isWeak"] = is_weak
+
+    # Computing the distribution of students in the dataframe
+    ratios = {
+        "boys": (students_df["Gender"] == "Male").sum() / total_students,
+        "girls": (students_df["Gender"] == "Female").sum() / total_students,
+        "msc": (students_df["Msc/Isl"] == "Msc").sum() / total_students,
+        "isl": (students_df["Msc/Isl"] == "Isl").sum() / total_students
+    }
+
+    # Shuffling the whole student dataset upfront
+    students_df = students_df.sample(frac=1).reset_index(drop=True)
+
+    # Subsetting the dataframes
+    naughty_students_df = students_df[students_df["isNaughty"]]
+    weak_students_df = students_df[students_df["isWeak"]]
+    remaining_students_df = students_df[~students_df["isNaughty"] & ~students_df["isWeak"]]
+
+    # Initialize empty classes
+    classes = [
+        {
             "size": class_sizes[i],
             "students": []
-        })
+        }
+        for i in range(num_classes)
+    ]
 
-    return classes
+    # Function to distribute naughty and weak students evenly among classes
+    distribute_evenly(naughty_students_df, num_classes, classes)
+    distribute_evenly(weak_students_df, num_classes, classes)
+    distribute_evenly(remaining_students_df, num_classes, classes)
 
-def distribute_round_robin(df, num_classes: int, classes: list):
-    num_classes = len(classes)
+    # Converting to dataframe
+    return [pd.DataFrame(cls["students"]) for cls in classes]
+
+def distribute_evenly(df, num_classes: int, classes: list):
+    """
+        Function to distribute students evenly across classes. It will go and assign students in a circular logic
+    """
     class_index = 0
 
-    shuffled_df = df.sample(frac=1).reset_index(drop=True)
-
-    for _, row in shuffled_df.iterrows():
+    for _, student in df.iterrows():
+        # Boolean to check if student is placed
         placed = False
 
         for _ in range(num_classes):
+            # Finding a class to place the student in
             if len(classes[class_index]["students"]) < classes[class_index]["size"]:
-                classes[class_index]["students"].append(row)
+                classes[class_index]["students"].append(student)
                 placed = True
                 class_index = (class_index + 1) % num_classes
                 break
 
+            # Increment class_index to check for next class in case you did not find space in the current class
             class_index = (class_index + 1) % num_classes
-
+        
         if not placed:
-            # All classes are full — stop distributing
+            # all classes full; but we assume that classroom will have sufficient space, so this case would not trigger
             break
 
-def balanced_shuffle(students_df, num_classes, class_sizes):
+def find_naughty_weak(df):
     """
-        Helper function to shuffle students
+        Helper function to create boolean flags for cases when the student is naughty and/or weak in studies
     """
-    classes = initialize_classes(num_classes, class_sizes)
 
-    # Buckets
-    naughty_df = students_df[students_df["Remarks"] == "Naughty"]
-    weak_df = students_df[students_df["Remarks"] == "Weak in studies"]
-    normal_df = students_df[students_df["Remarks"].isna() | (students_df["Remarks"] == "")]
+    has_naughty = df["Remarks"].str.contains("Naughty", case=False, regex=False)
+    has_weak = df["Remarks"].str.contains("Weak in studies", case=False, regex=False)
 
-    # Further split by gender and subject
-    def split_and_distribute(df):
-        for gender in ["Male", "Female"]:
-            for subject in ["Msc", "Isl"]:
-                subset = df[
-                    (df["Gender"] == gender) &
-                    (df["Msc/Isl"] == subject)
-                ]
-                if not subset.empty:
-                    distribute_round_robin(subset, num_classes, classes)
+    return has_naughty, has_weak
 
-    # Distribute in priority order
-    split_and_distribute(naughty_df)
-    split_and_distribute(weak_df)
-    split_and_distribute(normal_df)
-
-    return classes
-
-def shuffle(num_classes: int, class_sizes: list, directory: str):
+def load(num_classes: int, class_sizes: list, directory: str):
     """
-        Uniformly and randomly distribute students across all classes
+        Load the student data into dataframes
     """
 
     if directory == "tests":
@@ -100,16 +123,15 @@ def shuffle(num_classes: int, class_sizes: list, directory: str):
         students_df = pd.concat(dataframes, ignore_index=True)
         print(f"Loaded {len(students_df)} total students")
 
-        classes = balanced_shuffle(students_df, num_classes, class_sizes)
+        # Normalizing the 'Remarks' column
+        students_df["Remarks"] = (
+            students_df["Remarks"]
+            .fillna("")
+            .str.strip()
+        )
 
-        # Convert each class to a DataFrame
-        class_dfs = []
-        for i, cls in enumerate(classes):
-            df = pd.DataFrame(cls["students"])
-            class_dfs.append(df)
-
-        total_assigned = sum(len(c["students"]) for c in classes)
-        print(f"Total assigned students: {total_assigned}")
+        # Shuffle students
+        class_dfs = shuffle(students_df, num_classes, class_sizes)
 
         print_class_summary(class_dfs)
 
@@ -118,8 +140,11 @@ def print_class_summary(class_dfs):
         Helper function to print the distribution of the classes after shuffling
     """
 
+    total_students_assigned = 0
+
     for i, df in enumerate(class_dfs, start=1):
         total = len(df)
+        total_students_assigned += total
 
         males = (df["Gender"] == "Male").sum()
         females = (df["Gender"] == "Female").sum()
@@ -127,8 +152,8 @@ def print_class_summary(class_dfs):
         msc = (df["Msc/Isl"] == "Msc").sum()
         isl = (df["Msc/Isl"] == "Isl").sum()
 
-        naughty = (df["Remarks"] == "Naughty").sum()
-        weak = (df["Remarks"] == "Weak in studies").sum()
+        naughty = df["isNaughty"].sum()
+        weak = df["isWeak"].sum()
 
         print(f"Class {i}")
         print(f"Total students\t\t: {total}")
@@ -137,6 +162,8 @@ def print_class_summary(class_dfs):
         print(f"Naughty students\t: {naughty}")
         print(f"Weak in studies\t\t: {weak}")
         print("-" * 50)
+
+    print(f"Total students shuffled\t: {total_students_assigned}")
 
 def check_valid_args(num_classes: int, class_sizes: list, directory: str):
     """
@@ -191,7 +218,7 @@ def main():
     print(f"Class sizes: {class_sizes}")
     print(f"Input directory: {directory}")
 
-    shuffle(num_classes, class_sizes, directory)
+    load(num_classes, class_sizes, directory)
 
 if __name__ == "__main__":
     main()
