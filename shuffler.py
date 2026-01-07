@@ -53,9 +53,9 @@ def shuffle(students_df, num_classes: int, class_sizes: list):
         "Isl": (remaining_students_df["Msc/Isl"] == "Isl").mean()
     }
 
-    print("Distribution ratios of remaining students")
+    print("\nDistribution ratios of remaining students")
     for _, idx in enumerate(remaining_ratios):
-        print(f"{idx}\t: {100*remaining_ratios[idx]:.5f}%")
+        print(f"{idx}\t: {100*remaining_ratios[idx]:.3f}%")
 
     # Function to distribute remaining students according to the ratios
     distribute_according_ratios(remaining_students_df, num_classes, classes, remaining_ratios)
@@ -182,7 +182,7 @@ def load(num_classes: int, class_sizes: list, directory: str):
             raise FileNotFoundError(f"No excel files in directory '{directory}'")
 
         # Logging the excel files found
-        print("Found the following excel files")
+        print("\nFound the following excel files")
         for file in excel_files:
             print(f" - {file}")
 
@@ -194,7 +194,7 @@ def load(num_classes: int, class_sizes: list, directory: str):
 
         # Combining all the data into a single dataframe
         students_df = pd.concat(dataframes, ignore_index=True)
-        print(f"Loaded {len(students_df)} total students")
+        print(f"\nLoaded {len(students_df)} total students")
 
         # Normalizing the 'Remarks' column
         students_df["Remarks"] = (
@@ -228,15 +228,16 @@ def print_class_summary(class_dfs):
         naughty = df["isNaughty"].sum()
         weak = df["isWeak"].sum()
 
-        print(f"Class {i}")
+        print()
+        print("-" * 50)
+        print(f"\nClass {i}")
         print(f"Total students\t\t: {total}")
         print(f"Boys / Girls\t\t: {males} / {females}")
         print(f"Msc / Isl\t\t: {msc} / {isl}")
         print(f"Naughty students\t: {naughty}")
         print(f"Weak in studies\t\t: {weak}")
-        print("-" * 50)
 
-    print(f"Total students shuffled\t: {total_students_assigned}")
+    print(f"\nTotal students shuffled\t: {total_students_assigned}")
 
 def check_valid_args(num_classes: int, class_sizes: list, directory: str):
     """
@@ -286,10 +287,10 @@ def main():
 
     check_valid_args(num_classes, class_sizes, directory)
 
-    print("Shuffler configuration:")
-    print(f"Number of classes: {num_classes}")
-    print(f"Class sizes: {class_sizes}")
-    print(f"Input directory: {directory}")
+    print("\nShuffler configuration:")
+    print(f"Number of classes\t: {num_classes}")
+    print(f"Class sizes\t\t: {class_sizes}")
+    print(f"Input directory\t\t: {directory}")
 
     load(num_classes, class_sizes, directory)
 
