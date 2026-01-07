@@ -24,14 +24,6 @@ def shuffle(students_df, num_classes: int, class_sizes: list):
     is_weak = has_weak & ~has_naughty
     students_df["isWeak"] = is_weak
 
-    # Computing the distribution of students in the dataframe
-    ratios = {
-        "boys": (students_df["Gender"] == "Male").sum() / total_students,
-        "girls": (students_df["Gender"] == "Female").sum() / total_students,
-        "msc": (students_df["Msc/Isl"] == "Msc").sum() / total_students,
-        "isl": (students_df["Msc/Isl"] == "Isl").sum() / total_students
-    }
-
     # Shuffling the whole student dataset upfront
     students_df = students_df.sample(frac=1).reset_index(drop=True)
 
@@ -52,7 +44,21 @@ def shuffle(students_df, num_classes: int, class_sizes: list):
     # Function to distribute naughty and weak students evenly among classes
     distribute_evenly(naughty_students_df, num_classes, classes)
     distribute_evenly(weak_students_df, num_classes, classes)
-    distribute_evenly(remaining_students_df, num_classes, classes)
+
+    # Computing ratios of remaining students to maintain that ratio of students in every class
+    remaining_ratios = {
+        "Male": (remaining_students_df["Gender"] == "Male").mean(),
+        "Female": (remaining_students_df["Gender"] == "Female").mean(),
+        "Msc": (remaining_students_df["Msc/Isl"] == "Msc").mean(),
+        "Isl": (remaining_students_df["Msc/Isl"] == "Isl").mean()
+    }
+
+    print("Distribution ratios of remaining students")
+    for _, idx in enumerate(remaining_ratios):
+        print(f"{idx}\t: {100*remaining_ratios[idx]:.5f}%")
+
+    # Function to distribute remaining students according to the ratios
+    distribute_according_ratios(remaining_students_df, num_classes, classes, remaining_ratios)
 
     # Converting to dataframe
     return [pd.DataFrame(cls["students"]) for cls in classes]
@@ -81,6 +87,73 @@ def distribute_evenly(df, num_classes: int, classes: list):
         if not placed:
             # all classes full; but we assume that classroom will have sufficient space, so this case would not trigger
             break
+
+def distribute_according_ratios(df, num_classes: int, classes: list, ratios: dict):
+    """
+        Function to distribute students across classes according to their ratios to maintain equal representation in all classes
+    """
+
+    # Helper function to get count of attributes in a class
+    def get_class_counts(class_students):
+        if not class_students:
+            return {"Male": 0, "Female": 0, "Msc": 0, "Isl": 0}
+        
+        tmp = pd.DataFrame(class_students)
+        return {
+            "Male": (tmp["Gender"] == "Male").sum(),
+            "Female": (tmp["Gender"] == "Female").sum(),
+            "Msc": (tmp["Msc/Isl"] == "Msc").sum(),
+            "Isl": (tmp["Msc/Isl"] == "Isl").sum()
+        }
+    
+    for _, student in df.iterrows():
+        best_class_index = None
+        best_score = -1
+
+        for i in range(num_classes):
+            cls = classes[i]
+
+            # Skip full classes
+            if len(cls["students"]) >= cls["size"]:
+                continue
+
+            current_counts = get_class_counts(cls["students"])
+            remaining_slots = cls["size"] - len(cls["students"])
+
+            # Target counts for remaining slots
+            target = {
+                "Male": round(remaining_slots * ratios["Male"]),
+                "Female": round(remaining_slots * ratios["Female"]),
+                "Msc": round(remaining_slots * ratios["Msc"]),
+                "Isl": round(remaining_slots * ratios["Isl"])
+            }
+
+            score = 0
+
+            # Gender contribution
+            gender = student["Gender"]
+            if current_counts[gender] < target[gender]:
+                score += 1
+
+            # Stream contribution
+            stream = student["Msc/Isl"]
+            if current_counts[stream] < target[stream]:
+                score += 1
+
+            # Prefer the class that benefits the most
+            if score > best_score:
+                best_score = score
+                best_class_index = i
+
+        # Assign student to best class found
+        if best_class_index is not None:
+            classes[best_class_index]["students"].append(student)
+        else:
+            # Fallback: place in any class with space (should rarely happen)
+            for cls in classes:
+                if len(cls["students"]) < cls["size"]:
+                    cls["students"].append(student)
+                    break
 
 def find_naughty_weak(df):
     """
