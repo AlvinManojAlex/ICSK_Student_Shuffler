@@ -39,8 +39,8 @@ def create_test_excel(total_students: int, num_naughty_students: int, num_weak_s
 
     # Create a dataframe
     df = pd.DataFrame({
-        "Admn no.": admn_numbers,
-        "Student name": student_names,
+        "Admn. No.": admn_numbers,
+        "Student Name": student_names,
         "Gender": genders,
         "Msc/Isl": subjects,
         "Remarks": remarks
