@@ -90,7 +90,7 @@ def distribute_evenly(df, num_classes: int, classes: list):
 
 def distribute_according_ratios(df, num_classes: int, classes: list, ratios: dict):
     """
-        Function to distribute students across classes according to their ratios to maintain equal representation in all classes
+        Function to distribute students across classes using desired targets computed from ratios
     """
 
     # Helper function to get count of attributes in a class
@@ -106,9 +106,22 @@ def distribute_according_ratios(df, num_classes: int, classes: list, ratios: dic
             "Isl": (tmp["Msc/Isl"] == "Isl").sum()
         }
     
+    # Pre-compute desired targets using ratios
+    desired_per_class = []
+    for cls in classes:
+        size = cls["size"]
+        desired_per_class.append(
+            {
+                "Male": round(size * ratios["Male"]),
+                "Female": round(size * ratios["Female"]),
+                "Msc": round(size * ratios["Msc"]),
+                "Isl": round(size * ratios["Isl"])
+            }
+        )
+    
     for _, student in df.iterrows():
         best_class_index = None
-        best_score = -1
+        best_score = float("-inf")
 
         for i in range(num_classes):
             cls = classes[i]
@@ -118,27 +131,19 @@ def distribute_according_ratios(df, num_classes: int, classes: list, ratios: dic
                 continue
 
             current_counts = get_class_counts(cls["students"])
-            remaining_slots = cls["size"] - len(cls["students"])
-
-            # Target counts for remaining slots
-            target = {
-                "Male": round(remaining_slots * ratios["Male"]),
-                "Female": round(remaining_slots * ratios["Female"]),
-                "Msc": round(remaining_slots * ratios["Msc"]),
-                "Isl": round(remaining_slots * ratios["Isl"])
-            }
+            desired = desired_per_class[i]
 
             score = 0
 
             # Gender contribution
             gender = student["Gender"]
-            if current_counts[gender] < target[gender]:
-                score += 1
+            gender_deficit = desired[gender] - current_counts[gender]
+            score += gender_deficit
 
             # Stream contribution
             stream = student["Msc/Isl"]
-            if current_counts[stream] < target[stream]:
-                score += 1
+            stream_deficit = desired[stream] - current_counts[stream]
+            score += stream_deficit
 
             # Prefer the class that benefits the most
             if score > best_score:
