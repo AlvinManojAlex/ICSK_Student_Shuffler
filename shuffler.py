@@ -229,47 +229,30 @@ def normalize_data(df):
     """
 
     # Normalizing the "Remarks" column
-    df["Remarks"] = (
-        df["Remarks"]
-        .fillna("")
-        .str.strip()
-    )
+    if "Remarks" in df.columns:
+        df["Remarks"] = (
+            df["Remarks"]
+            .fillna("")
+            .str.strip()
+        )
 
-    # Ensuring that the "Msc/Isl" column is either "Msc" or "Isl" (case-sensitive)
-    df["Msc/Isl"] = (
-        df["Msc/Isl"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .str.title()
-    )
+    # Columns that just need proper casing
+    proper_case_columns = [
+        "Msc/Isl",
+        "Gender",
+        "House",
+        "Performance"
+    ]
 
-    # Ensuring that the "Gender" column is either "Male" or "Female" (case-sensitive)
-    df["Gender"] = (
-        df["Gender"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .str.title()
-    )
-
-    # Ensuring that the "House" column is of proper case
-    df["House"] = (
-        df["House"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .str.title()
-    )
-
-    # Ensuring that the "Performance" column is of proper case
-    df["Performance"] = (
-        df["Performance"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .str.title()
-    )
+    for col in proper_case_columns:
+        if col in df.columns:
+            df[col] = (
+                df[col]
+                    .astype(str)
+                    .str.strip()
+                    .str.lower()
+                    .str.title()
+            )
 
     return df
 
