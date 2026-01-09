@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import string
 
-def shuffle(students_df, num_classes: int, class_size: int):
+def shuffle(students_df, num_classes: int, class_sizes: list):
     """
         Function to shuffle students uniformly
         First, evenly distribute students who are naughty and weak in studies among the classes
@@ -32,7 +32,7 @@ def shuffle(students_df, num_classes: int, class_size: int):
     # Initialize empty classes
     classes = [
         {
-            "size": class_size,
+            "size": class_sizes[i],
             "students": []
         }
         for i in range(num_classes)
@@ -167,7 +167,7 @@ def find_naughty_weak(df):
 
     return has_naughty, has_weak
 
-def load(num_classes: int, directory: str):
+def load(num_classes: int, class_sizes: list, directory: str):
     """
         Load the student data into dataframes
     """
@@ -207,15 +207,12 @@ def load(num_classes: int, directory: str):
     # Combining all the data into a single dataframe
     students_df = pd.concat(dataframes, ignore_index=True)
     print(f"\nLoaded {len(students_df)} total students")
-
-    # Class size
-    class_size = len(students_df) / num_classes
         
     # Normalizing the dataset
     students_df = normalize_data(students_df)
 
     # Shuffle students
-    class_dfs = shuffle(students_df, num_classes, class_size)
+    class_dfs = shuffle(students_df, num_classes, class_sizes)
 
     print_class_summary(class_dfs)
 
@@ -357,10 +354,13 @@ def write_data_to_excel(class_dfs):
 
     print(f"Excel file written successfully: {output_file}")
 
-def check_valid_args(directory: str):
+def check_valid_args(num_classes: int, class_sizes: list, directory: str):
     """
         Checking if the user passed args are valid
     """
+    
+    if len(class_sizes) != num_classes:
+        raise ValueError(f"Expected {num_classes} class sizes, but got {len(class_sizes)} instead")
     
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"Directory '{directory}' does not exist")
@@ -382,6 +382,13 @@ def main():
     )
 
     parser.add_argument(
+        "class_sizes",
+        type=int,
+        nargs="+",
+        help="Number of students in each class"
+    )
+
+    parser.add_argument(
         "--dir",
         type=str,
         help="Directory containing excel files"
@@ -391,15 +398,17 @@ def main():
 
     # Getting the user passed arguments
     num_classes = args.num_classes
+    class_sizes = args.class_sizes
     directory = args.dir
 
-    check_valid_args(directory)
+    check_valid_args(num_classes, class_sizes, directory)
 
     print("\nShuffler configuration:")
     print(f"Number of classes\t: {num_classes}")
+    print(f"Class sizes: {class_sizes}")
     print(f"Input directory\t\t: {directory}")
 
-    load(num_classes, directory)
+    load(num_classes, class_sizes, directory)
 
 if __name__ == "__main__":
     main()
