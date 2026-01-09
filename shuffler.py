@@ -214,17 +214,54 @@ def load(num_classes: int, directory: str):
     # Class size
     class_size = len(students_df) / num_classes
         
-    # Normalizing the 'Remarks' column
-    students_df["Remarks"] = (
-        students_df["Remarks"]
-        .fillna("")
-        .str.strip()
-    )
+    # Normalizing the dataset
+    students_df = normalize_data(students_df)
 
     # Shuffle students
     class_dfs = shuffle(students_df, num_classes, class_size)
 
     print_class_summary(class_dfs)
+
+def normalize_data(df):
+    """
+        Function to normalize data
+        1. Correct "Remarks" column
+        2. Fix case of "Msc/Isl" column
+        3. Fix case of "Gender" column
+    """
+
+    # Normalizing the "Remarks" column
+    df["Remarks"] = (
+        df["Remarks"]
+        .fillna("")
+        .str.strip()
+    )
+
+    # Ensuring that the "Msc/Isl" column is either "Msc" or "Isl" (case-sensitive)
+    df["Msc/Isl"] = (
+        df["Msc/Isl"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "msc": "Msc",
+            "isl": "Isl"
+        })
+    )
+
+    # Ensuring that the "Gender" column is either "Male" or "Female" (case-sensitive)
+    df["Gender"] = (
+        df["Gender"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "male": "Male",
+            "female": "Female"
+        })
+    )
+
+    return df
 
 def print_class_summary(class_dfs):
     """
