@@ -1,7 +1,6 @@
 import argparse
 import pandas as pd
 import os
-import random
 
 def shuffle(students_df, num_classes: int, class_size: int):
     """
@@ -9,9 +8,6 @@ def shuffle(students_df, num_classes: int, class_size: int):
         First, evenly distribute students who are naughty and weak in studies among the classes
         Then distribute the remaining students uniformly
     """
-
-    # Total number of students in the dataframe
-    total_students = len(students_df)
 
     # Finding the rows with naughty/weak in the 'Remarks' column
     has_naughty, has_weak = find_naughty_weak(students_df)
@@ -228,6 +224,8 @@ def normalize_data(df):
         1. Correct "Remarks" column
         2. Fix case of "Msc/Isl" column
         3. Fix case of "Gender" column
+        4. Fix case of "House" column
+        5. Fix case of "Performance" column
     """
 
     # Normalizing the "Remarks" column
@@ -243,10 +241,7 @@ def normalize_data(df):
         .astype(str)
         .str.strip()
         .str.lower()
-        .map({
-            "msc": "Msc",
-            "isl": "Isl"
-        })
+        .str.title()
     )
 
     # Ensuring that the "Gender" column is either "Male" or "Female" (case-sensitive)
@@ -255,10 +250,25 @@ def normalize_data(df):
         .astype(str)
         .str.strip()
         .str.lower()
-        .map({
-            "male": "Male",
-            "female": "Female"
-        })
+        .str.title()
+    )
+
+    # Ensuring that the "House" column is of proper case
+    df["House"] = (
+        df["House"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .str.title()
+    )
+
+    # Ensuring that the "Performance" column is of proper case
+    df["Performance"] = (
+        df["Performance"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .str.title()
     )
 
     return df
@@ -304,7 +314,8 @@ def check_valid_args(directory: str):
 
 def main():
     """
-        Uniformly shuffle students such that each class is equally balanced in terms of gender ratio, moral science - islamic ratio and weak/naughty students
+        Uniformly shuffle students such that each class is equally balanced
+        in terms of gender ratio, moral science - islamic ratio and weak/naughty students
     """
 
     parser = argparse.ArgumentParser(
