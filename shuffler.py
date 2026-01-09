@@ -175,46 +175,56 @@ def load(num_classes: int, directory: str):
         Load the student data into dataframes
     """
 
+    # Finding all the excel files (.xlsx and .xls (older excel format)) in the directory
+    excel_files = [
+        os.path.join(directory, file)
+        for file in os.listdir(directory)
+        if file.endswith(".xlsx") or file.endswith(".xls")
+    ]
+
+    if not excel_files:
+        raise FileNotFoundError(f"No excel files in directory '{directory}'")
+        
+    # Logging the excel files found
+    print("\nFound the following excel files")
+    for file in excel_files:
+        print(f" - {file}")
+    
+    # Reading of excel files slightly different for test files and actual school files
     if directory == "tests":
-        # Finding all the excel files (.xlsx and .xls (older excel format)) in the directory
-        excel_files = [
-            os.path.join(directory, file)
-            for file in os.listdir(directory)
-            if file.endswith(".xlsx") or file.endswith(".xls")
-        ]
-
-        if not excel_files:
-            raise FileNotFoundError(f"No excel files in directory '{directory}'")
-
-        # Logging the excel files found
-        print("\nFound the following excel files")
-        for file in excel_files:
-            print(f" - {file}")
-
         # Loading all excel files into dataframes
         dataframes = []
         for file in excel_files:
             df = pd.read_excel(file)
             dataframes.append(df)
+    else:
+        # Loading all excel files into dataframes
+        dataframes = []
+        for file in excel_files:
+            df = pd.read_excel(file, header=3)
+            
+            # drop "Sl. No." column
+            df = df.drop(columns=[col for col in df.columns if col.lower().startswith("sl")])
+            dataframes.append(df)
 
-        # Combining all the data into a single dataframe
-        students_df = pd.concat(dataframes, ignore_index=True)
-        print(f"\nLoaded {len(students_df)} total students")
+    # Combining all the data into a single dataframe
+    students_df = pd.concat(dataframes, ignore_index=True)
+    print(f"\nLoaded {len(students_df)} total students")
 
-        # Class size
-        class_size = len(students_df) / num_classes
+    # Class size
+    class_size = len(students_df) / num_classes
         
-        # Normalizing the 'Remarks' column
-        students_df["Remarks"] = (
-            students_df["Remarks"]
-            .fillna("")
-            .str.strip()
-        )
+    # Normalizing the 'Remarks' column
+    students_df["Remarks"] = (
+        students_df["Remarks"]
+        .fillna("")
+        .str.strip()
+    )
 
-        # Shuffle students
-        class_dfs = shuffle(students_df, num_classes, class_size)
+    # Shuffle students
+    class_dfs = shuffle(students_df, num_classes, class_size)
 
-        print_class_summary(class_dfs)
+    print_class_summary(class_dfs)
 
 def print_class_summary(class_dfs):
     """
