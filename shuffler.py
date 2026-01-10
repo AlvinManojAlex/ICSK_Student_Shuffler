@@ -166,7 +166,7 @@ def find_naughty_weak(df):
     """
 
     has_naughty = df["Remarks"].str.contains("Naughty", case=False, regex=False)
-    has_weak = df["Remarks"].str.contains("Weak in studies", case=False, regex=False)
+    has_weak = df["Remarks"].str.contains(r"Weak in studies|Slow learner", case=False, regex=True)
 
     return has_naughty, has_weak
 

@@ -18,11 +18,24 @@ def normalize_data(df):
 
     # Columns that just need proper casing
     proper_case_columns = [
-        "Msc/Isl",
         "Gender",
         "House",
         "Performance"
     ]
+
+    # Checking for Msc/Isl
+    if "Msc/Isl" in df.columns:
+        df["Msc/Isl"] = (
+            df["Msc/Isl"]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .map({
+                "msc": "Msc",
+                "m.sc": "Msc",
+                "isl": "Isl"
+            })
+        )
 
     for col in proper_case_columns:
         if col in df.columns:
