@@ -253,12 +253,20 @@ def main():
         help="Directory containing excel files"
     )
 
+    parser.add_argument(
+        "--name",
+        type=str,
+        default="final_class_distribution",
+        help="Name of the output excel file"
+    )
+
     args = parser.parse_args()
 
     # Getting the user passed arguments
     num_classes = args.num_classes
     class_sizes = args.class_sizes
     directory = args.dir
+    output_file_name = args.name
 
     check_valid_args(num_classes, class_sizes, directory)
 
@@ -278,7 +286,7 @@ def main():
     print_class_summary(class_dfs)
 
     # Write the shuffled student data into excel files
-    write_data_to_excel(class_dfs)
+    write_data_to_excel(class_dfs, output_file_name)
 
 if __name__ == "__main__":
     main()

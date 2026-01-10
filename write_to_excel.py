@@ -2,7 +2,7 @@ import os
 import string
 import pandas as pd
 
-def write_data_to_excel(class_dfs):
+def write_data_to_excel(class_dfs, output_file_name: str):
     """
         Function to write the data into excel sheets with each sheet for the new class
         1. Drop "isNaughty" and "isWeak" boolean columns
@@ -16,7 +16,7 @@ def write_data_to_excel(class_dfs):
     else:
         print("\nFound `shuffling_output` directory, storing excel file here")
 
-    output_file = "shuffling_output/final_class_distribution.xlsx"
+    output_file = f"shuffling_output/{output_file_name}.xlsx"
 
     # Writing data to excel file
     with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
