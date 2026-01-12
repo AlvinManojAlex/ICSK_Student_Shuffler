@@ -2,3 +2,5 @@ school_files
 shuffling_output
 __pycache__
 temp
+.venv
+.python-version
