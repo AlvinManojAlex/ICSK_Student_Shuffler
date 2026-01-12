@@ -166,7 +166,7 @@ def find_naughty_weak(df):
     """
 
     has_naughty = df["Remarks"].str.contains("Naughty", case=False, regex=False)
-    has_weak = df["Remarks"].str.contains(r"Weak in studies|Slow learner", case=False, regex=True)
+    has_weak = df["Remarks"].str.contains(r"Weak in studies|Slow learner|Scope for improvement|sfi", case=False, regex=True)
 
     return has_naughty, has_weak
 
@@ -196,6 +196,7 @@ def load(num_classes: int, class_sizes: list, directory: str):
         dataframes = []
         for file in excel_files:
             df = pd.read_excel(file)
+            df.dropna(how="all")
             dataframes.append(df)
     else:
         # Loading all excel files into dataframes
@@ -204,7 +205,8 @@ def load(num_classes: int, class_sizes: list, directory: str):
             df = pd.read_excel(file, header=3)
             
             # drop "Sl. No." column
-            df = df.drop(columns=[col for col in df.columns if col.lower().startswith("sl")])
+            df = df.drop(columns=[col for col in df.columns if col.lower().startswith(("sl", "roll"))])
+            df = df.dropna(how="all")
             dataframes.append(df)
 
     # Combining all the data into a single dataframe
@@ -279,6 +281,13 @@ def main():
 
     # Normalizing the dataset
     students_df = normalize_data(students_df)
+
+    # # Uncomment below for debugging in case of bad gender rows
+    # bad_gender_rows = students_df[
+    # ~students_df["Gender"].isin(["Male", "Female"])
+    # ]
+
+    # print(bad_gender_rows[["Admn. No.", "Student Name", "Gender"]])
 
     # Shuffle students
     class_dfs = shuffle(students_df, num_classes, class_sizes)

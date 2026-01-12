@@ -6,6 +6,7 @@ def normalize_data(df):
         3. Fix case of "Gender" column
         4. Fix case of "House" column
         5. Fix case of "Performance" column
+        6. Make "Student Name" as upper case
     """
 
     # Normalizing the "Remarks" column
@@ -33,7 +34,25 @@ def normalize_data(df):
             .map({
                 "msc": "Msc",
                 "m.sc": "Msc",
-                "isl": "Isl"
+                "isl": "Isl",
+                "islamic": "Isl"
+            })
+        )
+    
+    # Checking for gender
+    if "Gender" in df.columns:
+        df["Gender"] = (
+            df['Gender']
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .map({
+                "boy": "Male",
+                "male": "Male",
+                "m": "Male",
+                "girl": "Female",
+                "female": "Female",
+                "f": "Female"
             })
         )
 
@@ -46,5 +65,12 @@ def normalize_data(df):
                     .str.lower()
                     .str.title()
             )
+
+    if "Student Name" in df.columns:
+        df["Student Name"] = (
+            df["Student Name"]
+            .astype(str)
+            .str.upper()
+        )
 
     return df
