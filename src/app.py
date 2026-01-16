@@ -8,7 +8,7 @@ class StudentShufflerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("ICSK Student Shuffler")
-        self.root.geometry("800x800")
+        self.root.geometry("600x400")
 
         self.class_entries = []
 
@@ -50,7 +50,7 @@ class StudentShufflerApp:
         ).pack(pady=5)
 
         # Output file
-        tk.Label(root, text="Where should the final excel sheet be stored?").pack(anchor="w", padx=40)
+        tk.Label(root, text="Location for final excel sheet").pack(anchor="w", padx=40)
         self.output_file_entry = tk.Entry(root, width=50)
         self.output_file_entry.pack(padx=40)
 
