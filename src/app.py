@@ -67,6 +67,7 @@ class StudentShufflerApp:
 
         # Input directory
         self.input_dir = ""
+        self.input_dir_var = tk.StringVar(value="No folder selected")
         tk.Label(self.content, text="Select input folder containing student files").pack(pady=(10, 2))
 
         tk.Button(
@@ -75,8 +76,17 @@ class StudentShufflerApp:
             command=self.browse_input_directory
         ).pack(pady=5)
 
+        # Label to print the chosen input directory
+        tk.Label(
+            self.content,
+            textvariable=self.input_dir_var,
+            wraplength=600,
+            fg="gray"
+        ).pack(pady=(2, 10))
+
         # Output file
         self.output_file = ""
+        self.output_file_var = tk.StringVar(value="No file selected")
         tk.Label(self.content, text="Choose where the final Excel file should be saved").pack(pady=(10, 2))
 
         tk.Button(
@@ -84,6 +94,14 @@ class StudentShufflerApp:
             text="Save As",
             command=self.browse_output_file
         ).pack(pady=5)
+
+        # Label to print the output file
+        tk.Label(
+            self.content,
+            textvariable=self.output_file_var,
+            wraplength=600,
+            fg="gray"
+        ).pack(pady=(2, 10))
 
         # Submit button
         tk.Button(
@@ -122,6 +140,7 @@ class StudentShufflerApp:
         directory = filedialog.askdirectory()
         if directory:
             self.input_dir = directory
+            self.input_dir_var.set(f"Selected: {directory}")
 
     def browse_output_file(self):
         file = filedialog.asksaveasfilename(
@@ -130,6 +149,7 @@ class StudentShufflerApp:
         )
         if file:
             self.output_file = file
+            self.output_file_var.set(f"Selected: {file}")
 
     def submit(self):
         try:
