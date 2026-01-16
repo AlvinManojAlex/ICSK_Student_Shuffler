@@ -13,15 +13,41 @@ class StudentShufflerApp:
 
         self.class_entries = []
 
-        # Heading
-        tk.Label(
-            root,
-            text="ICSK Student Shuffler",
-            font=("Arial", 18, "bold")
-        ).pack(pady=10)
+        # Scrollable container
+        container = tk.Frame(root)
+        container.pack(fill="both", expand=True)
+
+        self.canvas = tk.Canvas(container)
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(container, orient="vertical", command=self.canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+
+        self.scrollable_frame = tk.Frame(self.canvas)
+
+        self.content = tk.Frame(self.scrollable_frame)
+        self.content.pack(padx=30, pady=20, fill="x")
+
+        self.canvas_window = self.canvas.create_window(
+            (0, 0),
+            window=self.scrollable_frame,
+            anchor="nw"
+        )
+
+        self.canvas.bind(
+            "<Configure>",
+            lambda e: self.canvas.itemconfig(self.canvas_window, width=e.width)
+        )
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
 
         # Frame for inputs
-        self.main_frame = tk.Frame(root)
+        self.main_frame = tk.Frame(self.content)
         self.main_frame.pack(pady=10)
 
         # Number of classes
@@ -36,33 +62,35 @@ class StudentShufflerApp:
         ).grid(row=0, column=2, padx=5)
 
         # Frame for dynamic class sizes
-        self.class_frame = tk.Frame(root)
+        self.class_frame = tk.Frame(self.content)
         self.class_frame.pack(pady=10)
 
         # Input directory
-        tk.Label(root, text="Select input folder containing student files").pack(pady=(10, 2))
+        tk.Label(self.content, text="Select input folder containing student files").pack(pady=(10, 2))
 
         tk.Button(
-            root,
+            self.content,
             text="Browse",
             command=self.browse_input_directory
         ).pack(pady=5)
 
         # Output file
-        tk.Label(root, text="Choose where the final Excel file should be saved").pack(pady=(10, 2))
+        tk.Label(self.content, text="Choose where the final Excel file should be saved").pack(pady=(10, 2))
 
         tk.Button(
-            root,
+            self.content,
             text="Save As",
             command=self.browse_output_file
         ).pack(pady=5)
 
         # Submit button
         tk.Button(
-            root,
+            self.content,
             text="Shuffle",
             command=self.submit
         ).pack(pady=20)
+
+        self.root.bind_all("<MouseWheel>", self._on_mousewheel)
 
     def create_class_inputs(self):
         # Clear previous inputs
@@ -141,6 +169,18 @@ class StudentShufflerApp:
             messagebox.showinfo("Success", "Student shuffling completed successfully!")
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Error", f"Shuffling failed:\n{e}")
+
+    def _on_mousewheel(self, event):
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, "units")
+        else:
+            self.canvas.yview_scroll(1, "units")
+
+    def _bind_mousewheel(self, event):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, event):
+        self.canvas.unbind_all("<MouseWheel>")
 
 # Run the app
 if __name__ == "__main__":
