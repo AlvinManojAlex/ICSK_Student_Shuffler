@@ -3,12 +3,13 @@ import sys
 import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox
+import sv_ttk
 
 class StudentShufflerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("ICSK Student Shuffler")
-        self.root.geometry("600x400")
+        self.root.geometry("700x700")
 
         self.class_entries = []
 
@@ -39,9 +40,7 @@ class StudentShufflerApp:
         self.class_frame.pack(pady=10)
 
         # Input directory
-        tk.Label(root, text="File locations (Input directory):").pack(anchor="w", padx=40)
-        self.input_dir_entry = tk.Entry(root, width=50)
-        self.input_dir_entry.pack(padx=40)
+        tk.Label(root, text="Select input folder containing student files").pack(pady=(10, 2))
 
         tk.Button(
             root,
@@ -50,9 +49,7 @@ class StudentShufflerApp:
         ).pack(pady=5)
 
         # Output file
-        tk.Label(root, text="Location for final excel sheet").pack(anchor="w", padx=40)
-        self.output_file_entry = tk.Entry(root, width=50)
-        self.output_file_entry.pack(padx=40)
+        tk.Label(root, text="Choose where the final Excel file should be saved").pack(pady=(10, 2))
 
         tk.Button(
             root,
@@ -63,7 +60,7 @@ class StudentShufflerApp:
         # Submit button
         tk.Button(
             root,
-            text="Submit",
+            text="Shuffle",
             command=self.submit
         ).pack(pady=20)
 
@@ -149,4 +146,5 @@ class StudentShufflerApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = StudentShufflerApp(root)
+    sv_ttk.set_theme("light")
     root.mainloop()
