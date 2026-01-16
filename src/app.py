@@ -66,6 +66,7 @@ class StudentShufflerApp:
         self.class_frame.pack(pady=10)
 
         # Input directory
+        self.input_dir = ""
         tk.Label(self.content, text="Select input folder containing student files").pack(pady=(10, 2))
 
         tk.Button(
@@ -75,6 +76,7 @@ class StudentShufflerApp:
         ).pack(pady=5)
 
         # Output file
+        self.output_file = ""
         tk.Label(self.content, text="Choose where the final Excel file should be saved").pack(pady=(10, 2))
 
         tk.Button(
@@ -119,8 +121,7 @@ class StudentShufflerApp:
     def browse_input_directory(self):
         directory = filedialog.askdirectory()
         if directory:
-            self.input_dir_entry.delete(0, tk.END)
-            self.input_dir_entry.insert(0, directory)
+            self.input_dir = directory
 
     def browse_output_file(self):
         file = filedialog.asksaveasfilename(
@@ -128,8 +129,7 @@ class StudentShufflerApp:
             filetypes=[("Excel files", "*.xlsx")]
         )
         if file:
-            self.output_file_entry.delete(0, tk.END)
-            self.output_file_entry.insert(0, file)
+            self.output_file = file
 
     def submit(self):
         try:
@@ -139,8 +139,8 @@ class StudentShufflerApp:
             messagebox.showerror("Error", "Please enter valid integer values.")
             return
 
-        input_dir = self.input_dir_entry.get()
-        output_file = self.output_file_entry.get()
+        input_dir = self.input_dir
+        output_file = self.output_file
 
         if not input_dir or not output_file:
             messagebox.showerror("Error", "Please select input and output locations.")
