@@ -189,25 +189,16 @@ def load(num_classes: int, class_sizes: list, directory: str):
     print("\nFound the following excel files")
     for file in excel_files:
         print(f" - {file}")
-    
-    # Reading of excel files slightly different for test files and actual school files
-    if directory == "tests":
-        # Loading all excel files into dataframes
-        dataframes = []
-        for file in excel_files:
-            df = pd.read_excel(file)
-            df.dropna(how="all")
-            dataframes.append(df)
-    else:
-        # Loading all excel files into dataframes
-        dataframes = []
-        for file in excel_files:
-            df = pd.read_excel(file, header=3)
+
+    # Loading all excel files into dataframes
+    dataframes = []
+    for file in excel_files:
+        df = pd.read_excel(file)
             
-            # drop "Sl. No." column
-            df = df.drop(columns=[col for col in df.columns if col.lower().startswith(("sl", "roll"))])
-            df = df.dropna(how="all")
-            dataframes.append(df)
+        # drop "Sl. No." column
+        df = df.drop(columns=[col for col in df.columns if col.lower().startswith(("sl", "roll"))])
+        df = df.dropna(how="all")
+        dataframes.append(df)
 
     # Combining all the data into a single dataframe
     students_df = pd.concat(dataframes, ignore_index=True)

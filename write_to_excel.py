@@ -10,13 +10,7 @@ def write_data_to_excel(class_dfs, output_file_name: str):
         3. Fills 'Promoted to' column based on 'Promoted from' + class letter
     """
 
-    if not os.path.isdir("shuffling_output"):
-        print("\nCreating `shuffling_output` directory to store the result")
-        os.makedirs("shuffling_output")
-    else:
-        print("\nFound `shuffling_output` directory, storing excel file here")
-
-    output_file = f"shuffling_output/{output_file_name}.xlsx"
+    output_file = output_file_name
 
     # Writing data to excel file
     with pd.ExcelWriter(output_file, engine="xlsxwriter") as writer:
