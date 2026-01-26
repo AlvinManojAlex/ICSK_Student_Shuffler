@@ -1,9 +1,7 @@
-import os
-import sys
-import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import sv_ttk
+import shuffler
 
 class StudentShufflerApp:
     def __init__(self, root):
@@ -166,29 +164,16 @@ class StudentShufflerApp:
             messagebox.showerror("Error", "Please select input and output locations.")
             return
         
-        # Path to shuffler script
-        shuffler_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "shuffler.py"
-        )
-
-        # Command to execute the shuffler script
-        command = [
-            sys.executable,
-            shuffler_path,
-            str(num_classes),
-            *map(str, class_sizes),
-            "--dir",
-            input_dir,
-            "--name",
-            output_file
-        ]
-
         try:
-            subprocess.run(command, check=True)
+            shuffler.run_shuffler(
+                num_classes=num_classes,
+                class_sizes=class_sizes,
+                directory=self.input_dir,
+                output_file=self.output_file
+            )
             messagebox.showinfo("Success", "Student shuffling completed successfully!")
-        except subprocess.CalledProcessError as e:
-            messagebox.showerror("Error", f"Shuffling failed:\n{e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Shuffling failed: \n{e}")
 
     def _on_mousewheel(self, event):
         if event.delta > 0:

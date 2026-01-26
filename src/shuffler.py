@@ -170,7 +170,7 @@ def find_naughty_weak(df):
 
     return has_naughty, has_weak
 
-def load(num_classes: int, class_sizes: list, directory: str):
+def load(directory: str):
     """
         Load the student data into dataframes
     """
@@ -217,6 +217,39 @@ def check_valid_args(num_classes: int, class_sizes: list, directory: str):
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"Directory '{directory}' does not exist")
 
+def run_shuffler(num_classes: int, class_sizes: list, directory: str, output_file: str):
+    """
+        Entry point for Tkinter .exe usage
+    """
+
+    check_valid_args(num_classes, class_sizes, directory)
+
+    print("\nShuffler configuration:")
+    print(f"Number of classes\t: {num_classes}")
+    print(f"Class sizes: {class_sizes}")
+    print(f"Input directory\t\t: {directory}")
+
+    # Load the student data into a dataframe
+    students_df = load(directory)
+
+    # Normalize the dataset
+    normalize_data(students_df)
+
+    # # Uncomment below for debugging in case of bad gender rows
+    # bad_gender_rows = students_df[
+    # ~students_df["Gender"].isin(["Male", "Female"])
+    # ]
+
+    # print(bad_gender_rows[["Admn. No.", "Student Name", "Gender"]])
+
+    # Shuffle the students
+    class_dfs = shuffle(students_df, num_classes, class_sizes)
+
+    print_class_summary(class_dfs)
+
+    # Write the shuffled student data into excel files
+    write_data_to_excel(class_dfs, output_file)
+
 def main():
     """
         Uniformly shuffle students such that each class is equally balanced
@@ -259,34 +292,10 @@ def main():
     num_classes = args.num_classes
     class_sizes = args.class_sizes
     directory = args.dir
-    output_file_name = args.name
+    output_file = args.name
 
-    check_valid_args(num_classes, class_sizes, directory)
-
-    print("\nShuffler configuration:")
-    print(f"Number of classes\t: {num_classes}")
-    print(f"Class sizes: {class_sizes}")
-    print(f"Input directory\t\t: {directory}")
-
-    students_df = load(num_classes, class_sizes, directory)
-
-    # Normalizing the dataset
-    students_df = normalize_data(students_df)
-
-    # # Uncomment below for debugging in case of bad gender rows
-    # bad_gender_rows = students_df[
-    # ~students_df["Gender"].isin(["Male", "Female"])
-    # ]
-
-    # print(bad_gender_rows[["Admn. No.", "Student Name", "Gender"]])
-
-    # Shuffle students
-    class_dfs = shuffle(students_df, num_classes, class_sizes)
-
-    print_class_summary(class_dfs)
-
-    # Write the shuffled student data into excel files
-    write_data_to_excel(class_dfs, output_file_name)
+    # Run the shuffler
+    run_shuffler(num_classes, class_sizes, directory, output_file)
 
 if __name__ == "__main__":
     main()

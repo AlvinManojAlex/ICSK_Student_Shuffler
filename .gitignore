@@ -5,3 +5,6 @@ temp
 .venv
 .python-version
 .DS_Store
+build
+dist
+*.spec
