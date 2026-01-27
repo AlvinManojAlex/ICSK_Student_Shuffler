@@ -7,6 +7,7 @@ def normalize_data(df):
         4. Fix case of "House" column
         5. Fix case of "Performance" column
         6. Make "Student Name" as upper case
+        7. Standardize "Admn. No." column name
     """
 
     # Normalizing the "Remarks" column
@@ -72,5 +73,21 @@ def normalize_data(df):
             .astype(str)
             .str.upper()
         )
+
+    # Possible values for "Admn. No." column
+    admn_no_column_rename_map = {
+        "admn no": "Admn. No.",
+        "admn. no": "Admn. No.",
+        "admn no.": "Admn. No.",
+        "admn number": "Admn. No.",
+        "admission no": "Admn. No.",
+        "admission no.": "Admn. No.",
+        "admission number": "Admn. No."
+    }
+
+    df.columns = [
+        admn_no_column_rename_map.get(col.lower(), col)
+        for col in df.columns
+    ]
 
     return df
