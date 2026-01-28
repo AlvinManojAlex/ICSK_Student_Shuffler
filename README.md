@@ -41,7 +41,7 @@ The program uses these remarks to distribute students evenly across classes base
 
 1. Download `StudentShuffler-v1.0.0-win64.exe` from the Releases section, or directly from [here](https://github.com/AlvinManojAlex/ICSK_StudentShuffler/releases)
 
-2. Double-click the application.
+2. Double-click the application. (You might get a Windows warning, since the Publisher cannot be recognized. You can click "More info" and then click "Run anyway".)
 
 3. You'll be met with a screen that will prompt you for "Number of classes". Enter the number of future classes
 
