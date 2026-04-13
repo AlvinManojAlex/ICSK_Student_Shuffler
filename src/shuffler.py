@@ -170,29 +170,21 @@ def find_naughty_weak(df):
 
     return has_naughty, has_weak
 
-def load(directory: str):
+def load(files: str):
     """
         Load the student data into dataframes
     """
 
-    # Finding all the excel files (.xlsx and .xls (older excel format)) in the directory
-    excel_files = [
-        os.path.join(directory, file)
-        for file in os.listdir(directory)
-        if file.endswith(".xlsx") or file.endswith(".xls")
-    ]
+    if not files:
+        raise FileNotFoundError("No files provided")
 
-    if not excel_files:
-        raise FileNotFoundError(f"No excel files in directory '{directory}'")
-        
-    # Logging the excel files found
-    print("\nFound the following excel files")
-    for file in excel_files:
+    print("\nLoading the following excel files")
+    for file in files:
         print(f" - {file}")
 
     # Loading all excel files into dataframes
     dataframes = []
-    for file in excel_files:
+    for file in files:
         df = pd.read_excel(file)
             
         # drop "Sl. No." column
@@ -206,31 +198,28 @@ def load(directory: str):
         
     return students_df
 
-def check_valid_args(num_classes: int, class_sizes: list, directory: str):
+def check_valid_args(num_classes: int, class_sizes: list,):
     """
         Checking if the user passed args are valid
     """
     
     if len(class_sizes) != num_classes:
         raise ValueError(f"Expected {num_classes} class sizes, but got {len(class_sizes)} instead")
-    
-    if not os.path.isdir(directory):
-        raise FileNotFoundError(f"Directory '{directory}' does not exist")
 
-def run_shuffler(num_classes: int, class_sizes: list, directory: str, output_file: str):
+def run_shuffler(num_classes: int, class_sizes: list, files: list, output_file: str):
     """
         Entry point for Tkinter .exe usage
     """
 
-    check_valid_args(num_classes, class_sizes, directory)
+    check_valid_args(num_classes, class_sizes)
 
     print("\nShuffler configuration:")
     print(f"Number of classes\t: {num_classes}")
     print(f"Class sizes: {class_sizes}")
-    print(f"Input directory\t\t: {directory}")
+    print(f"Input files\t\t: {files}")
 
     # Load the student data into a dataframe
-    students_df = load(directory)
+    students_df = load(files)
 
     # Normalize the dataset
     normalize_data(students_df)

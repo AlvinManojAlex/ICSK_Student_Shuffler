@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import sv_ttk
 import shuffler
+import os
 
 class StudentShufflerApp:
     def __init__(self, root):
@@ -63,21 +64,21 @@ class StudentShufflerApp:
         self.class_frame = tk.Frame(self.content)
         self.class_frame.pack(pady=10)
 
-        # Input directory
-        self.input_dir = ""
-        self.input_dir_var = tk.StringVar(value="No folder selected")
-        tk.Label(self.content, text="Select input folder containing student files").pack(pady=(10, 2))
+        # Input files
+        self.input_files = []
+        self.input_files_var = tk.StringVar(value="No files selected")
+        tk.Label(self.content, text="Select student excel files").pack(pady=(10,2))
 
         tk.Button(
             self.content,
             text="Browse",
-            command=self.browse_input_directory
+            command=self.browse_input_files
         ).pack(pady=5)
 
         # Label to print the chosen input directory
         tk.Label(
             self.content,
-            textvariable=self.input_dir_var,
+            textvariable=self.input_files_var,
             wraplength=600,
             fg="gray"
         ).pack(pady=(2, 10))
@@ -134,11 +135,15 @@ class StudentShufflerApp:
             entry.grid(row=i, column=1, padx=5)
             self.class_entries.append(entry)
 
-    def browse_input_directory(self):
-        directory = filedialog.askdirectory()
-        if directory:
-            self.input_dir = directory
-            self.input_dir_var.set(f"Selected: {directory}")
+    def browse_input_files(self):
+        files = filedialog.askopenfilenames(
+            filetypes=[("Excel files", "*.xlsx *.xls")]
+        )
+
+        if files:
+            self.input_files = list(files)
+            display = "\n".join(os.path.basename(f) for f in self.input_files)
+            self.input_files_var.set(f"Selected:\n{display}")
 
     def browse_output_file(self):
         file = filedialog.asksaveasfilename(
@@ -157,18 +162,15 @@ class StudentShufflerApp:
             messagebox.showerror("Error", "Please enter valid integer values.")
             return
 
-        input_dir = self.input_dir
-        output_file = self.output_file
-
-        if not input_dir or not output_file:
-            messagebox.showerror("Error", "Please select input and output locations.")
+        if not self.input_files or not self.output_file:
+            messagebox.showerror("Error", "Please select input files and output location.")
             return
         
         try:
             shuffler.run_shuffler(
                 num_classes=num_classes,
                 class_sizes=class_sizes,
-                directory=self.input_dir,
+                files=self.input_files,
                 output_file=self.output_file
             )
             messagebox.showinfo("Success", "Student shuffling completed successfully!")
